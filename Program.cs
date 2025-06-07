@@ -35,6 +35,7 @@ namespace Supermarket
 
             while (isWork)
             {
+                Console.Clear();
                 Console.WriteLine("Супермаркет");
                 Console.WriteLine($"{AddBuyerToQueueCommand} - Добавить покупателя в очередь");
                 Console.WriteLine($"{ServeBuyerCommand} - Обслужить покупателя");
@@ -47,7 +48,7 @@ namespace Supermarket
                 switch (command)
                 {
                     case AddBuyerToQueueCommand:
-                        AddBuyer();
+                        FillQueue();
                         break;
 
                     case ServeBuyerCommand:
@@ -69,17 +70,23 @@ namespace Supermarket
             }
         }
 
-        private void AddBuyer()
+        private void FillQueue()
         {
             int minRandomMoney = 340;
             int maxRandomMoney = 1000;
-            int randomMoney = Utilite.GenerateRandomNumber(minRandomMoney, maxRandomMoney + 1);
+            int quantityQueue = 10;
 
-            Buyer buyer = new Buyer(randomMoney,AddProductsInCart());
+            for (int i = 0; i < quantityQueue; i++)
+            {
+                int randomMoney = Utilite.GenerateRandomNumber(minRandomMoney, maxRandomMoney + 1);
 
-            _buyer.Enqueue(buyer);
+                Buyer buyer = new Buyer(randomMoney, AddProductsInCart());
 
-            Console.WriteLine("Новый покупатель добавлен в очередь");
+                _buyer.Enqueue(buyer);
+            }
+
+            Console.WriteLine("Очередь заполнена!");
+            Console.ReadKey();
         }
 
         private void ServeAllBuyers()
@@ -98,7 +105,6 @@ namespace Supermarket
 
         private void ServeBuyer(Buyer buyer)
         {
-
             int totalCost = buyer.GetSumPriceProductInCart();
 
             while (totalCost > buyer.Money)
@@ -120,14 +126,15 @@ namespace Supermarket
             int maxQuantityProducts = 10;
             int quantityProducts = Utilite.GenerateRandomNumber(minQuantityProducts, maxQuantityProducts + 1);
 
-            for (int i = 0; i > quantityProducts; i++)
+            for (int i = 0; i < quantityProducts; i++)
             {
-                int randomIndex = Utilite.GenerateRandomNumber(1, _products.Count + 1);
-                products.Add(_products [randomIndex]);
+                int randomIndex = Utilite.GenerateRandomNumber(0, _products.Count);
+                products.Add(_products[randomIndex]);
             }
 
             return products;
         }
+
         private void CreateProducts()
         {
             _products.Add(new Product("Хлеб", 50));
@@ -140,24 +147,24 @@ namespace Supermarket
 
     class Buyer
     {
-       private List<Product> _bag = new List<Product>();
+        private List<Product> _bag = new List<Product>();
+        private List<Product> _cart;
 
         public Buyer(int money, List<Product> products)
         {
             Money = money;
-            Cart = products;
+            _cart = products;
         }
 
-        public List<Product> Cart { get; private set; }
         public int Money { get; private set; }
-        
+
         public int GetSumPriceProductInCart()
         {
             int sum = 0;
 
-            for (int i = 0; i < Cart.Count; i++)
+            for (int i = 0; i < _cart.Count; i++)
             {
-                sum += Cart[i].Price;
+                sum += _cart[i].Price;
             }
 
             return sum;
@@ -165,9 +172,9 @@ namespace Supermarket
 
         public void RemoveRandomItem()
         {
-            int index = Utilite.GenerateRandomNumber(0, Cart.Count + 1);
-            Product removed = Cart[index];
-            Cart.RemoveAt(index);
+            int index = Utilite.GenerateRandomNumber(0, _cart.Count);
+            Product removed = _cart[index];
+            _cart.Remove(removed);
 
             Console.WriteLine($"Не хватает денег! Продукт {removed.Name} удалён из тележки.");
             Console.ReadKey();
@@ -175,19 +182,15 @@ namespace Supermarket
 
         public int BuyItems()
         {
-            int money = 0;
             int totalCost = GetSumPriceProductInCart();
 
-            Console.Clear();
-
-            money += totalCost;
-            _bag.AddRange(Cart);
-            Cart.Clear();
+            _bag.AddRange(_cart);
+            _cart.Clear();
 
             Console.WriteLine($"Покупатель купил товары на сумму: {totalCost}");
             ShoyPurchases();
 
-            return money;
+            return totalCost;
         }
 
         private void ShoyPurchases()
