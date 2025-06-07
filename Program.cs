@@ -141,6 +141,7 @@ namespace Supermarket
     class Buyer
     {
        private List<Product> _bag = new List<Product>();
+
         public Buyer(int money, List<Product> products)
         {
             Money = money;
@@ -150,8 +151,6 @@ namespace Supermarket
         public List<Product> Cart { get; private set; }
         public int Money { get; private set; }
         
-
-
         public int GetSumPriceProductInCart()
         {
             int sum = 0;
